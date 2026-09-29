@@ -1,0 +1,2246 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Продуктовый помощник</title>
+  <style>
+:root {
+  --glass-bg: rgba(255,255,255,.42);
+  --glass-border: rgba(255,255,255,.58);
+  --text: #4a4d5f;
+  --text-strong: #383b4d;
+  --muted: #7f8192;
+  --rose: #efc8d6;
+  --peach: #f6d0bf;
+  --lavender: #d8d3ee;
+  --blue-soft: #b8cde5;
+  --mint: #c8e1d5;
+  --shadow: 0 14px 40px rgba(169,150,164,.16);
+  --shadow-soft: 0 8px 24px rgba(169,150,164,.12);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  color: var(--text);
+  line-height: 1.5;
+  background:
+    radial-gradient(circle at top left, rgba(255,220,214,.95), transparent 30%),
+    radial-gradient(circle at top right, rgba(220,218,255,.9), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(215,240,227,.86), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(255,232,210,.88), transparent 30%),
+    linear-gradient(180deg,#fffaf7 0%,#faf4f4 40%,#f6f3fb 72%,#f8fbfb 100%);
+  background-attachment: fixed;
+}
+
+button, input, textarea { font: inherit; }
+button { cursor: pointer; }
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 20px 28px;
+  background: rgba(255,255,255,.28);
+  border-bottom: 1px solid rgba(255,255,255,.48);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow: 0 8px 28px rgba(170,150,165,.10);
+}
+
+.topbar-inner,
+.layout {
+  max-width: 1450px;
+  margin: 0 auto;
+}
+
+.topbar-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.brand-title {
+  margin: 0 0 5px;
+  font-size: 30px;
+  font-weight: 850;
+  letter-spacing: -.03em;
+  color: var(--text-strong);
+}
+
+.brand-subtitle {
+  margin: 0;
+  color: var(--muted);
+}
+
+.freshness {
+  padding: 11px 15px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.36);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-soft);
+  white-space: nowrap;
+}
+
+.layout {
+  padding: 28px 24px 60px;
+  display: grid;
+  grid-template-columns: 270px minmax(0,1fr);
+  gap: 24px;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel,
+.main-card,
+.answer-card,
+.category-card,
+.intro-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+}
+
+.panel { padding: 20px; }
+.main-card { padding: 30px; }
+.intro-card { padding: 20px 22px; margin-bottom: 20px; }
+
+.panel-title,
+.section-heading,
+.answer-title,
+.hero-title {
+  color: var(--text-strong);
+}
+
+.panel-title { font-size: 15px; margin: 0 0 14px; }
+.hero-title { font-size: 28px; margin: 0 0 8px; }
+.hero-description { color: var(--muted); margin: 0 0 22px; }
+
+.question-box {
+  padding: 18px;
+  border-radius: 24px;
+  background: rgba(255,255,255,.24);
+  border: 1px solid rgba(255,255,255,.5);
+}
+
+.question-input {
+  width: 100%;
+  min-height: 115px;
+  resize: vertical;
+  padding: 15px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.68);
+  background: rgba(255,255,255,.52);
+  color: var(--text-strong);
+  outline: none;
+}
+
+.question-input:focus {
+  border-color: rgba(234,183,199,.8);
+  box-shadow: 0 0 0 4px rgba(239,200,214,.22);
+}
+
+.question-actions,
+.answer-mode-bar,
+.answer-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.btn {
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.56);
+  font-weight: 760;
+  box-shadow: var(--shadow-soft);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, rgba(239,200,214,.86), rgba(246,208,191,.86));
+  color: #5b4c56;
+}
+
+.btn-blue {
+  background: linear-gradient(135deg, rgba(184,205,229,.82), rgba(216,211,238,.84));
+  color: #515869;
+}
+
+.btn-light {
+  background: rgba(255,255,255,.4);
+  color: var(--text-strong);
+}
+
+.voice-active {
+  background: linear-gradient(135deg, rgba(217,147,158,.94), rgba(246,208,191,.94)) !important;
+  color: white !important;
+}
+
+.mode-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 11px;
+  border-radius: 13px;
+  background: rgba(255,255,255,.33);
+  border: 1px solid rgba(255,255,255,.52);
+}
+
+.quick-grid,
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 12px;
+}
+
+.quick-btn,
+.category-product-btn,
+.history-item,
+.selector-option {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.56);
+  background: rgba(255,255,255,.34);
+  color: var(--text-strong);
+  text-align: left;
+}
+
+.history-list,
+.category-products {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.answer-card {
+  display: none;
+  margin-top: 24px;
+  padding: 26px;
+}
+
+.answer-card.show { display: block; }
+
+.answer-block {
+  margin: 18px 0;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.28);
+  border: 1px solid rgba(255,255,255,.56);
+  box-shadow: var(--shadow-soft);
+}
+
+.answer-block h3 { margin-top: 0; }
+
+.short-answer {
+  font-size: 18px;
+  color: var(--text-strong);
+}
+
+.script-block { background: rgba(247,233,239,.62); }
+.important { background: rgba(255,247,223,.60); }
+.alert-block { background: rgba(255,235,238,.62); }
+.source-block { font-size: 13px; color: var(--muted); }
+
+.objection-step,
+.selector-card,
+.recommendation-card {
+  margin-bottom: 14px;
+  padding: 15px;
+  border-radius: 15px;
+  background: rgba(255,255,255,.35);
+  border: 1px solid rgba(255,255,255,.58);
+}
+
+.objection-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--rose), var(--lavender));
+  font-weight: 850;
+}
+
+.objection-label,
+.selector-question {
+  font-weight: 850;
+  color: var(--text-strong);
+}
+
+.selector-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.selector-option.active {
+  background: linear-gradient(135deg, rgba(239,200,214,.9), rgba(216,211,238,.9));
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.detail-item {
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.35);
+  border: 1px solid rgba(255,255,255,.52);
+}
+
+.detail-item b {
+  display: block;
+  color: var(--text-strong);
+  margin-bottom: 3px;
+}
+
+.recommendation-rate {
+  font-size: 22px;
+  font-weight: 850;
+  color: #5c5365;
+}
+
+.recommendation-meta,
+.small-note,
+.footer-note {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.category-card { padding: 18px; }
+
+.tag {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(200,225,213,.6);
+  color: #50695f;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.tag.suspended {
+  background: rgba(255,235,238,.7);
+  color: #865762;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 650px) {
+  .topbar-inner { flex-direction: column; align-items: flex-start; }
+  .quick-grid, .catalog-grid, .details-grid { grid-template-columns: 1fr; }
+  .question-actions { flex-direction: column; }
+  .btn { width: 100%; }
+}
+
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div>
+      <h1 class="brand-title">Продуктовый помощник</h1>
+      <p class="brand-subtitle">Спросите о продукте банка — голосом или текстом</p>
+    </div>
+
+    <div class="freshness">
+      🕒 База актуальна на: <strong>29.09.2026</strong>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <aside class="sidebar">
+
+    <div class="panel">
+      <h2 class="panel-title">Что умеет приложение</h2>
+      <div class="small-note">
+        • отвечает по продуктам;<br>
+        • анализирует ставки и условия;<br>
+        
+        • отдельно работает с возражениями;<br>
+        • озвучивает ответ;<br>
+        • не придумывает отсутствующие данные.
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel-title">Последние вопросы</h2>
+      <div id="historyList" class="history-list">
+        <div class="small-note">Здесь появится история вопросов.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel-title">Примеры</h2>
+      <div class="small-note">
+        «Какая ставка сейчас самая выгодная?»<br><br>
+        «Какой вклад самый выгодный?»<br><br>
+        «Клиент говорит: в другом банке ставка выше»<br><br>
+        «Расскажи про Комфортный+»<br><br>
+        «Как открыть счёт через Финуслуги?»
+      </div>
+    </div>
+
+  </aside>
+
+  <main>
+
+    <section class="main-card">
+
+      <h2 class="hero-title">Что вы хотите узнать?</h2>
+
+      <p class="hero-description">
+        Если это вопрос о ставках или условиях — помощник анализирует продуктовую базу.
+        Если это слова клиента — включается отдельная логика работы с возражением.
+      </p>
+
+      <div class="question-box">
+
+        <textarea
+          id="questionInput"
+          class="question-input"
+          placeholder="Например: Какая ставка сейчас самая выгодная?"
+        ></textarea>
+
+        <div class="question-actions">
+          <button id="voiceBtn" class="btn btn-blue" onclick="startVoiceInput()">🎤 Спросить голосом</button>
+          <button class="btn btn-primary" onclick="processQuestion()">➜ Получить ответ</button>
+          <button class="btn btn-light" onclick="clearQuestion()">Очистить</button>
+        </div>
+
+        <div class="answer-mode-bar">
+          <strong>Как отвечать:</strong>
+
+          <label class="mode-choice">
+            <input type="radio" name="replyMode" value="text">
+            Текст
+          </label>
+
+          <label class="mode-choice">
+            <input type="radio" name="replyMode" value="voice">
+            Голос
+          </label>
+
+          <label class="mode-choice">
+            <input type="radio" name="replyMode" value="both" checked>
+            Текст + голос
+          </label>
+        </div>
+
+      </div>
+
+      </section>
+
+    <section id="answerCard" class="answer-card">
+      <div>
+        <h2 class="answer-title">Ответ помощника</h2>
+        <div id="recognizedQuestion" class="small-note"></div>
+      </div>
+
+      <div id="answerContent"></div>
+
+      <div class="answer-toolbar">
+        <button class="btn btn-blue" onclick="speakCurrentAnswer()">🔊 Прослушать</button>
+        <button class="btn btn-light" onclick="pauseSpeech()">⏸ Пауза</button>
+        <button class="btn btn-light" onclick="stopSpeech()">⏹ Остановить</button>
+      </div>
+    </section>
+
+<section class="intro-card">
+        <h2 class="section-heading">Частые вопросы</h2>
+
+        <div class="quick-grid">
+          <button class="quick-btn" onclick="askQuick('Какая ставка сейчас самая выгодная?')">
+            ⭐ Самая выгодная ставка
+          </button>
+<button class="quick-btn" onclick="askQuick('Расскажи про Комфортный+')">
+            💳 Комфортный+
+          </button>
+
+          <button class="quick-btn" onclick="askQuick('Клиент говорит: в другом банке ставка выше')">
+            💬 Возражение клиента
+          </button>
+
+          <button class="quick-btn" onclick="askQuick('Как открыть счет через Финуслуги?')">
+            🌐 Финуслуги
+          </button>
+        </div>
+      </section>
+
+    <section class="intro-card">
+      <strong>Идея:</strong>
+      сотрудник задаёт вопрос обычным языком. Приложение определяет тип запроса:
+      продуктовый вопрос, сравнение продуктов, реплика клиента или справочный сценарий.
+    </section>
+
+    <section>
+      <h2 class="section-heading">Продукты в базе</h2>
+
+      <div class="catalog-grid">
+        <div class="category-card">
+          <h3>Доступны для открытия</h3>
+          <div id="activeProducts" class="category-products"></div>
+        </div>
+
+        <div class="category-card">
+          <h3>Открытие приостановлено</h3>
+          <div id="suspendedProducts" class="category-products"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<script>
+const APP_CONFIG = {
+  bankName: "ПАО АКБ «Металлинвестбанк»",
+  assistantName: "Продуктовый помощник",
+  dataUpdatedAt: "29.09.2026",
+  locale: "ru-RU",
+  defaultReplyMode: "both",
+
+  rules: {
+    doNotInvent: true,
+    marketingProductsExcludedFromBestRateComparison: true,
+    sourceDateRule:
+      "Для продуктовых условий использовать дату из документа-источника: формулировку «действует с ...». " +
+      "Эту дату обязательно показывать в ответе рядом с источником.",
+    objectionStructure: [
+      "Присоединиться",
+      "Задать вопрос",
+      "Уточнить",
+      "Предложить"
+    ]
+  }
+};
+
+
+const PRODUCT_DATABASE = {
+  products: {
+
+    comfortableNewClients: {
+      id: "comfortableNewClients",
+      name: "Комфортный для Новых клиентов",
+      type: "Накопительный счёт",
+      category: "savings",
+      status: { opening: "active", label: "Доступен для открытия" },
+
+      comparisonPolicy: {
+        includeInBestRateComparison: true,
+        marketing: false
+      },
+
+      official: {
+        currency: "Рубли РФ",
+        newClient:
+          "Клиент, у которого в течение 90 календарных дней до открытия счёта отсутствовали открытые срочные вклады и накопительные счета в рублях РФ либо совокупный остаток по ним был менее 3 000 ₽.",
+        rates:
+          "14% годовых — первый и второй отчётный период; 11,1% — начиная с третьего отчётного периода.",
+        amount: "Без ограничения",
+        minimumBalanceForInterest: "1 000 ₽",
+        replenishment:
+          "Наличными / безналичным переводом со счёта в Металлинвестбанке",
+        interest:
+          "Начисляется на фактический остаток на утро каждого дня.",
+        payment: "Ежемесячно в последний день месяца",
+        earlyClosure:
+          "При закрытии до окончания отчётного периода проценты за него не начисляются и не выплачиваются."
+      },
+
+      consultation: {
+        short:
+          "Для новых клиентов первые два отчётных периода действует ставка 14% годовых. С третьего периода — 11,1%.",
+        important: [
+          "Нужно проверить соответствие критериям нового клиента.",
+          "Минимальная сумма для начисления процентов — 1 000 ₽.",
+          "При закрытии до конца отчётного периода проценты за него не выплачиваются."
+        ]
+      },
+
+      source: {
+        title: "Тарифный план «Накопительный счет»",
+        effectiveFrom: "24.09.2026"
+      }
+    },
+
+
+    comfortPlus: {
+      id: "comfortPlus",
+      name: "Комфортный+",
+      type: "Накопительный счёт",
+      category: "savings",
+      status: { opening: "active", label: "Доступен для открытия" },
+
+      comparisonPolicy: {
+        includeInBestRateComparison: true,
+        marketing: false
+      },
+
+      official: {
+        currencies: "Рубли РФ / китайские юани",
+        rates: "12,6% годовых в рублях; 0,5% в китайских юанях",
+        minimumBalanceForInterest: "1 000 ₽ / 100 CNY",
+        amount: "Без ограничения",
+        interest:
+          "Начисляется на фактический остаток на утро каждого дня.",
+        payment: "Ежемесячно в последний день месяца",
+        replenishment:
+          "В рублях — наличными или безналичным переводом со своего счёта в Металлинвестбанке.",
+        remoteReplenishment:
+          "По будням с 00:00 до 21:00 мск.",
+        earlyClosure:
+          "При закрытии до конца отчётного периода проценты за текущий период не выплачиваются."
+      },
+
+      consultation: {
+        short:
+          "«Комфортный+» — накопительный счёт со ставкой 12,6% годовых в рублях.",
+        important: [
+          "Прямое пополнение из другого банка по СБП не предусмотрено.",
+          "Сначала деньги переводятся на текущий или карточный счёт в Металлинвестбанке.",
+          "«Комфортный+» нельзя выбрать счётом по умолчанию для СБП."
+        ]
+      },
+
+      source: {
+        title: "Тарифный план «Накопительный счет»",
+        effectiveFrom: "24.09.2026",
+        consultationTitle: "Памятка по работе с «Комфортный+»"
+      }
+    },
+
+
+    interestingSavings: {
+      id: "interestingSavings",
+      name: "Интересный",
+      type: "Накопительный счёт",
+      category: "savings",
+      status: { opening: "active", label: "Доступен для открытия" },
+
+      comparisonPolicy: {
+        includeInBestRateComparison: false,
+        marketing: true,
+        internalNote:
+          "Разные ставки по периодам. Не использовать в сравнении «самый выгодный». Показывать только при прямом вопросе."
+      },
+
+      official: {
+        currency: "Рубли РФ",
+        rates:
+          "9% годовых — Период 1; 3% — Период 2.",
+        amount: "Без ограничения"
+      },
+
+      consultation: {
+        short:
+          "Накопительный счёт со ставками, различающимися по периодам."
+      },
+
+      source: {
+        title: "Тарифный план «Накопительный счет»",
+        effectiveFrom: "24.09.2026"
+      }
+    },
+
+
+    comfortableSavings: {
+      id: "comfortableSavings",
+      name: "Комфортный",
+      type: "Накопительный счёт",
+      category: "savings",
+      status: {
+        opening: "suspended",
+        since: "27.03.2026",
+        label: "Открытие новых счетов приостановлено"
+      },
+
+      comparisonPolicy: {
+        includeInBestRateComparison: false,
+        marketing: false
+      },
+
+      official: {
+        rates: "5% в рублях; 0,5% в китайских юанях"
+      },
+
+      consultation: {
+        short:
+          "Открытие новых счетов «Комфортный» приостановлено."
+      },
+
+      source: {
+        title: "Тарифный план «Накопительный счет»",
+        effectiveFrom: "24.09.2026"
+      }
+    },
+
+
+    profitableSavings: {
+      id: "profitableSavings",
+      name: "Доходный",
+      type: "Накопительный счёт",
+      category: "savings",
+      status: {
+        opening: "suspended",
+        since: "05.09.2025",
+        label: "Открытие новых счетов приостановлено"
+      },
+
+      comparisonPolicy: {
+        includeInBestRateComparison: false,
+        marketing: false
+      },
+
+      official: {
+        rate:
+          "3% при минимальном остатке до 100 млн ₽; 0,01% — от 100 000 000,01 ₽"
+      },
+
+      consultation: {
+        short:
+          "Открытие новых счетов «Доходный» приостановлено."
+      },
+
+      source: {
+        title: "Тарифный план «Накопительный счет»",
+        effectiveFrom: "24.09.2026"
+      }
+    },
+
+
+    comfortableNew: {
+      id: "comfortableNew",
+      name: "Комфортный NEW",
+      type: "Накопительный счёт",
+      category: "savings",
+      status: {
+        opening: "suspended",
+        since: "03.08.2026",
+        label: "Открытие новых счетов приостановлено"
+      },
+
+      comparisonPolicy: {
+        includeInBestRateComparison: false,
+        marketing: false
+      },
+
+      official: {
+        rates:
+          "13,5% — первый и второй отчётный период; 11,1% — с третьего."
+      },
+
+      consultation: {
+        short:
+          "Новый счёт не открывается. Карточка нужна для сопровождения действующих клиентов."
+      },
+
+      source: {
+        title: "Тарифный план «Накопительный счет»",
+        effectiveFrom: "24.09.2026"
+      }
+    },
+
+
+    profitablePayroll: {
+      id: "profitablePayroll",
+      name: "Доходный зарплатный",
+      type: "Накопительный счёт",
+      category: "savings",
+      status: {
+        opening: "suspended",
+        since: "05.09.2025",
+        label: "Открытие новых счетов приостановлено"
+      },
+
+      comparisonPolicy: {
+        includeInBestRateComparison: false,
+        marketing: false
+      },
+
+      official: {
+        audience:
+          "Сотрудники ООО «Белэнергомаш – БЗЭМ», получающие зарплату на карты Металлинвестбанка.",
+        rate:
+          "3% при минимальном остатке до 100 млн ₽; 0,01% — от 100 000 000,01 ₽"
+      },
+
+      consultation: {
+        short:
+          "Новый счёт не открывается."
+      },
+
+      source: {
+        title: "Тарифный план «Накопительный счет»",
+        effectiveFrom: "24.09.2026"
+      }
+    },
+
+
+    maximumIncome: {
+      id: "maximumIncome",
+      name: "Максимальный доход",
+      type: "Вклад",
+      category: "deposit",
+      status: { opening: "active", label: "Доступен для открытия" },
+
+      comparisonPolicy: {
+        includeInBestRateComparison: true,
+        marketing: false
+      },
+
+      official: {
+        currencies: "Рубли РФ / CNY / AED",
+        terms: "31, 91, 181, 367, 550, 740, 1100 дней",
+        rubRatesEnd:
+          "31 — 13,5%; 91 — 13,0%; 181 — 12,8%; 367 — 12,1%; 550 — 11,7%; 740 — 11,2%; 1100 — 10,2%",
+        rubRatesNewClients:
+          "31 — 13,5%; 91 — 13,6%; 181 — 13,6%; 367 — 13,0%; 550 — 12,2%; 740 — 11,7%; 1100 — 10,7%",
+        monthlyRates:
+          "181 — 12,3%; 367 — 11,4%; 550 — 10,7%; 740 — 10,2%; 1100 — 9,2%",
+        replenishment: "Не предусмотрено",
+        partialWithdrawal: "Не предусмотрено",
+        interestPayment: "Ежемесячно или в конце срока",
+        earlyTermination:
+          "31/91/181 день — по ставке «До востребования». Для длинных сроков с 182 дня — 1/2 ставки договора."
+      },
+
+      comparisonData: {
+        ordinaryClientMaxRate: 13.5,
+        ordinaryClientMaxRateTerm: "31 день",
+        newClientMaxRate: 13.6,
+        newClientMaxRateTerms: ["91 день", "181 день"]
+      },
+
+      consultation: {
+        short:
+          "Срочный вклад без пополнения и частичного снятия.",
+        important: [
+          "Перед консультацией уточнить срок, сумму и способ выплаты процентов."
+        ]
+      },
+
+      source: {
+        title: "Условия приема вкладов физических лиц",
+        effectiveFrom: "24.09.2026"
+      }
+    },
+
+
+    maximumIncomeNewMoney: {
+      id: "maximumIncomeNewMoney",
+      name: "Максимальный доход: Новые деньги",
+      type: "Вклад",
+      category: "deposit",
+      status: { opening: "active", label: "Доступен для открытия" },
+
+      comparisonPolicy: {
+        includeInBestRateComparison: true,
+        marketing: false
+      },
+
+      official: {
+        currency: "Рубли РФ",
+        terms: "31, 91, 181, 367, 550, 740, 1100 дней",
+        baseRates:
+          "31 — 13,5%; 91 — 13,0%; 181 — 12,8%; 367 — 12,1%; 550 — 11,7%; 740 — 11,2%; 1100 — 10,2%",
+        bonus100k:
+          "0 / 0,6 / 0,8 / 0,9 / 0,5 / 0,5 / 0,5 п.п.",
+        bonus1500k:
+          "0 / 0,7 / 1,0 / 0,9 / 0,5 / 0,5 / 0,5 п.п.",
+        newMoney:
+          "Разница между совокупным остатком на момент открытия и максимальным остатком на счетах за расчётный период.",
+        bonusApplication:
+          "Надбавка применяется только к сумме Новых денег.",
+        replenishment: "Не предусмотрено",
+        partialWithdrawal: "Не предусмотрено"
+      },
+
+      comparisonData: {
+        maxRate: 13.8,
+        maxRateTerm: "181 день",
+        minAmountForMaxRate: 1500000,
+        requiresNewMoney: true,
+        requiresNewClient: false
+      },
+
+      consultation: {
+        short:
+          "Максимальная ставка — 13,8% на 181 день при сумме от 1,5 млн ₽ и наличии суммы, соответствующей критериям Новых денег.",
+        important: [
+          "Новые деньги — это не просто перевод из другого банка.",
+          "Надбавка применяется только к рассчитанной сумме Новых денег."
+        ]
+      },
+
+      source: {
+        title: "Условия приема вкладов физических лиц",
+        effectiveFrom: "24.09.2026"
+      }
+    },
+
+
+    replenishable: {
+      id: "replenishable",
+      name: "Пополняемый",
+      type: "Вклад",
+      category: "deposit",
+      status: { opening: "active", label: "Доступен для открытия" },
+
+      comparisonPolicy: {
+        includeInBestRateComparison: true,
+        marketing: false
+      },
+
+      official: {
+        currency: "Рубли РФ",
+        minimumAmount: "от 10 000 ₽",
+        terms: "181 / 367 дней",
+        rates:
+          "181 день — 9,80% (10,001% эффективная ставка с капитализацией); 367 дней — 10,00% (10,474% эффективная ставка с капитализацией)",
+        replenishment:
+          "Дополнительные взносы принимаются; минимальная сумма дополнительного взноса — 5 000 ₽",
+        partialWithdrawal: "Не предусмотрено",
+        interestPayment: "Ежемесячно, с капитализацией",
+        earlyTermination: "По ставке вклада «До востребования»",
+        prolongation: "Предусмотрена автоматическая пролонгация"
+      },
+
+      consultation: {
+        short:
+          "Вклад с возможностью пополнения. Минимальная сумма — 10 000 ₽, срок 181 или 367 дней."
+      },
+
+      source: {
+        title: "Условия приема вкладов физических лиц",
+        effectiveFrom: "24.09.2026"
+      }
+    },
+
+
+    managed: {
+      id: "managed",
+      name: "Управляемый",
+      type: "Вклад",
+      category: "deposit",
+      status: { opening: "active", label: "Доступен для открытия" },
+
+      comparisonPolicy: {
+        includeInBestRateComparison: true,
+        marketing: false
+      },
+
+      official: {
+        currency: "Рубли РФ",
+        minimumAmount: "от 10 000 ₽",
+        term: "367 дней",
+        rates:
+          "Неснижаемый остаток 10 000 ₽ — 9,50%; 300 000 ₽ — 9,60%; 1 400 000 ₽ — 9,70%",
+        replenishment:
+          "Дополнительные взносы принимаются; минимальная сумма дополнительного взноса — 5 000 ₽",
+        partialWithdrawal:
+          "Предусмотрено до суммы неснижаемого остатка",
+        interestPayment: "В конце срока вклада",
+        earlyTermination: "По ставке вклада «До востребования»",
+        prolongation: "Предусмотрена автоматическая пролонгация"
+      },
+
+      consultation: {
+        short:
+          "Вклад с пополнением и возможностью частичного снятия до неснижаемого остатка."
+      },
+
+      source: {
+        title: "Условия приема вкладов физических лиц",
+        effectiveFrom: "24.09.2026"
+      }
+    },
+
+
+    pensionIncome: {
+      id: "pensionIncome",
+      name: "Пенсионный доход",
+      type: "Вклад",
+      category: "deposit",
+      status: { opening: "active", label: "Доступен для открытия" },
+
+      comparisonPolicy: {
+        includeInBestRateComparison: true,
+        marketing: false
+      },
+
+      official: {
+        currency: "Рубли РФ",
+        audience:
+          "Физические лица — резиденты, получающие пенсии от Пенсионного фонда РФ, министерств и ведомств, осуществляющих пенсионное обеспечение",
+        minimumAmount: "5 000 ₽",
+        minimumBalance: "5 000 ₽",
+        term: "367 дней",
+        rate: "10,00%",
+        effectiveRate: "10,474% с учётом ежемесячной капитализации",
+        replenishment: "Дополнительные взносы принимаются",
+        partialWithdrawal:
+          "Предусмотрено до суммы неснижаемого остатка",
+        interestPayment: "Ежемесячно, с капитализацией",
+        earlyTermination:
+          "За полный месяц — по ставке вклада; за неполный текущий месяц — по ставке «До востребования»",
+        prolongation: "Предусмотрена автоматическая пролонгация"
+      },
+
+      consultation: {
+        short:
+          "Вклад с пополнением, частичным снятием до неснижаемого остатка и ежемесячной капитализацией."
+      },
+
+      source: {
+        title: "Условия приема вкладов физических лиц",
+        effectiveFrom: "24.09.2026"
+      }
+    },
+
+
+    incomeYear: {
+      id: "incomeYear",
+      name: "Доходный год",
+      type: "Вклад",
+      category: "deposit",
+      status: { opening: "active", label: "Доступен для открытия" },
+
+      comparisonPolicy: {
+        includeInBestRateComparison: false,
+        marketing: true,
+        internalNote:
+          "Маркетинговый вклад со ставками, меняющимися по периодам. Не использовать в сравнении выгодности. Показывать только при прямом вопросе."
+      },
+
+      official: {
+        minimumAmount: "от 100 000 ₽",
+        term: "367 дней",
+        period1:
+          "20% — с даты открытия по последний календарный день второго месяца",
+        period2:
+          "12% — третий и четвёртый месяцы",
+        period3:
+          "10% — с пятого месяца до окончания срока",
+        minimumGuaranteedRate: "11,155%",
+        replenishment: "Не предусмотрено",
+        partialWithdrawal: "Не предусмотрено"
+      },
+
+      consultation: {
+        short:
+          "Вклад на 367 дней со ставками, меняющимися по периодам: 20%, затем 12%, затем 10%.",
+        important: [
+          "20% не является ставкой на весь срок.",
+          "Минимальная гарантированная ставка — 11,155%."
+        ]
+      },
+
+      source: {
+        title: "Условия приема вкладов физических лиц",
+        effectiveFrom: "24.09.2026"
+      }
+    },
+
+
+    deserved: {
+      id: "deserved",
+      name: "Заслуженный",
+      type: "Вклад",
+      category: "deposit",
+      status: { opening: "active", label: "Доступен для открытия" },
+
+      comparisonPolicy: {
+        includeInBestRateComparison: true,
+        marketing: false
+      },
+
+      official: {
+        audience:
+          "Физические лица — резиденты, являющиеся держателями карты «Пенсионная» Металлинвестбанка.",
+        minimumAmount: "5 000 ₽",
+        minimumBalance: "5 000 ₽",
+        term: "181 день",
+        rate: "12,00%",
+        effectiveRate: "12,303% с капитализацией",
+        replenishment: "Дополнительные взносы принимаются",
+        partialWithdrawal:
+          "Разрешено до неснижаемого остатка",
+        interestPayment:
+          "Ежемесячно, с капитализацией"
+      },
+
+      comparisonData: {
+        rate: 12.0,
+        effectiveRate: 12.303,
+        requiresPensionCard: true
+      },
+
+      consultation: {
+        short:
+          "Вклад для держателей карты «Пенсионная» Металлинвестбанка."
+      },
+
+      source: {
+        title: "Условия приема вкладов физических лиц",
+        effectiveFrom: "24.09.2026"
+      }
+    }
+
+  }
+};
+
+
+function getProductById(productId) {
+  return PRODUCT_DATABASE.products[productId] || null;
+}
+
+function getAllProducts() {
+  return Object.values(PRODUCT_DATABASE.products);
+}
+
+function getActiveProducts() {
+  return getAllProducts().filter(p => p.status?.opening === "active");
+}
+
+function getSuspendedProducts() {
+  return getAllProducts().filter(p => p.status?.opening === "suspended");
+}
+
+function getProductsForBestRateComparison() {
+  return getActiveProducts().filter(
+    p => p.comparisonPolicy?.includeInBestRateComparison === true
+  );
+}
+
+
+
+function looksLikeBestRateQuestion(question) {
+  const q = normalizeText(question);
+
+  const hasRate = q.includes("ставк");
+  const hasDeposit = q.includes("вклад");
+  const hasSuperlative =
+    q.includes("сам") ||
+    q.includes("максим") ||
+    q.includes("высок") ||
+    q.includes("выгод");
+
+  const asksComparison =
+    q.includes("какая") ||
+    q.includes("какой") ||
+    q.includes("где") ||
+    q.includes("что выгод");
+
+  return hasSuperlative && asksComparison && (hasRate || hasDeposit);
+}
+
+
+
+function renderBestRateAnalysis() {
+  const products = getProductsForBestRateComparison();
+
+  // ВАЖНО:
+  // Маркетинговые продукты со ставками по периодам уже исключены на уровне products.js.
+  // Поэтому «Доходный год» и подобные продукты здесь не участвуют.
+
+  const newMoney = getProductById("maximumIncomeNewMoney");
+  const ordinary = getProductById("maximumIncome");
+
+  document.getElementById("answerContent").innerHTML = `
+    <div class="answer-block">
+      <h3>⭐ Самая высокая ставка среди сравниваемых вкладов</h3>
+
+      <div class="recommendation-card">
+        <h4>${escapeHtml(newMoney.name)}</h4>
+        <div class="recommendation-rate">13,8% годовых</div>
+
+        <div class="recommendation-meta">
+          181 день • от 1 500 000 ₽ • новый клиент не обязателен • нужны «Новые деньги»
+        </div>
+
+        <p>
+          Максимальная ставка достигается при базовой ставке 12,8%
+          и надбавке 1,0 п.п. на сумму, соответствующую критериям «Новых денег».
+        </p>
+
+        <div class="important">
+          <strong>Учесть:</strong>
+          надбавка применяется только к рассчитанной сумме Новых денег.
+          На остальную часть вклада действует базовая ставка.
+        </div>
+      </div>
+    </div>
+
+    <div class="answer-block">
+      <h3>Для обычного клиента без «Новых денег»</h3>
+
+      <div class="recommendation-card">
+        <h4>${escapeHtml(ordinary.name)}</h4>
+        <div class="recommendation-rate">13,5% годовых</div>
+
+        <div class="recommendation-meta">
+          31 день • обычный клиент • без условия «Новые деньги»
+        </div>
+
+        <p>
+          Это максимальная ставка для обычного клиента без надбавки за Новые деньги.
+        </p>
+      </div>
+    </div>
+
+    <div class="answer-block important">
+      <h3>Нужен подбор под клиента?</h3>
+      <p>
+        Если важна не только ставка, можно сравнить продукты по сумме,
+        сроку и доступу к деньгам.
+      </p>
+
+      <button class="btn btn-light" onclick="askQuick('Подбери вклад')">
+        Подобрать вклад
+      </button>
+    </div>
+
+    <div class="answer-block source-block">
+      <strong>Источник:</strong>
+      Условия приема вкладов физических лиц<br>
+      <strong>Условия действуют с:</strong> 24.09.2026
+    </div>
+  `;
+
+  currentSpeechText =
+    "Самая высокая ставка среди сравниваемых вкладов составляет 13,8 процента годовых " +
+    "по вкладу Максимальный доход Новые деньги на 181 день при сумме от одного миллиона пятисот тысяч рублей " +
+    "и наличии Новых денег. Для обычного клиента без Новых денег максимальная ставка составляет 13,5 процента " +
+    "по вкладу Максимальный доход на 31 день. " +
+    "Условия действуют с 24 сентября 2026 года.";
+}
+
+
+
+
+
+
+
+
+
+function getGenericReferenceIntent(question) {
+  const q = normalizeText(question);
+
+  if (q.includes("какие вклады") && q.includes("пополн")) return "deposits_replenishable";
+  if (q.includes("каким") && q.includes("вклад") && q.includes("пополн")) return "deposits_replenishable";
+
+  if (q.includes("частич") && q.includes("сним") && q.includes("вклад")) return "deposits_withdrawal";
+  if (q.includes("расход") && q.includes("вклад")) return "deposits_withdrawal";
+
+  if (q.includes("ежемесяч") && q.includes("процент") && q.includes("вклад")) return "monthly_interest";
+  if (q.includes("капитализац") && q.includes("вклад")) return "capitalization";
+  if (q.includes("в конце срока") && q.includes("процент")) return "end_interest";
+  if (q.includes("досроч") && q.includes("вклад")) return "early_termination";
+  if (q.includes("пролонгац") && q.includes("вклад")) return "prolongation";
+
+  if ((q.includes("мобиль") || q.includes("приложен")) && q.includes("вклад")) return "mobile_opening";
+  if (q.includes("только в офис") && q.includes("вклад")) return "office_only";
+
+  if (q.includes("вклад") && q.includes("юан")) return "yuan_deposits";
+  if (q.includes("вклад") && q.includes("дирхам")) return "aed_deposits";
+
+  if (q.includes("накопитель") && q.includes("сейчас") && q.includes("откры")) return "active_savings";
+  if (q.includes("накопитель") && (q.includes("не откры") || q.includes("закрыт"))) return "suspended_savings";
+  if (q.includes("максим") && q.includes("ставк") && q.includes("накопитель")) return "best_savings_rate";
+  if (q.includes("накопитель") && q.includes("выгод") && q.includes("нов") && q.includes("клиент")) return "best_savings_new_client";
+
+  if (q.includes("чем") && q.includes("комфортный+") && q.includes("комфортный для новых")) return "compare_comfort";
+
+  if (q.includes("кто считается новым клиентом")) return "new_client_definition";
+
+  if (q.includes("треть") && q.includes("отчетн") && q.includes("период")) return "third_reporting_period_rate";
+  if (q.includes("что такое") && q.includes("отчетн") && q.includes("период")) return "reporting_period_definition";
+
+  if (q.includes("какой вклад") && q.includes("от 100 000")) return "deposit_from_100k";
+  if (q.includes("какой вклад") && q.includes("1,5")) return "deposit_from_1500k";
+
+  return null;
+}
+
+
+function renderGenericReferenceAnalysis(intent) {
+  const sourceDate = "24.09.2026";
+
+  const answers = {
+    deposits_replenishable: {
+      title: "Вклады с пополнением",
+      items: [
+        "«Пополняемый» — дополнительные взносы от 5 000 ₽.",
+        "«Управляемый» — дополнительные взносы от 5 000 ₽.",
+        "«Заслуженный» — дополнительные взносы принимаются.",
+        "«Пенсионный доход» — дополнительные взносы принимаются."
+      ]
+    },
+
+    deposits_withdrawal: {
+      title: "Вклады с частичным снятием",
+      items: [
+        "«Управляемый» — расходные операции до суммы неснижаемого остатка.",
+        "«Заслуженный» — расходные операции до неснижаемого остатка 5 000 ₽.",
+        "«Пенсионный доход» — расходные операции до неснижаемого остатка 5 000 ₽."
+      ]
+    },
+
+    monthly_interest: {
+      title: "Вклады с ежемесячной выплатой / капитализацией",
+      items: [
+        "«Максимальный доход» — возможна ежемесячная выплата процентов на сроках, где предусмотрена соответствующая ставка.",
+        "«Пополняемый» — проценты ежемесячно капитализируются.",
+        "«Заслуженный» — проценты ежемесячно капитализируются.",
+        "«Пенсионный доход» — проценты ежемесячно капитализируются."
+      ]
+    },
+
+    capitalization: {
+      title: "Вклады с капитализацией",
+      items: [
+        "«Пополняемый».",
+        "«Заслуженный».",
+        "«Пенсионный доход»."
+      ]
+    },
+
+    end_interest: {
+      title: "Выплата процентов в конце срока",
+      items: [
+        "«Максимальный доход» — возможна выплата в конце срока.",
+        "«Максимальный доход: Новые деньги» — проценты выплачиваются в конце срока.",
+        "«Управляемый» — проценты выплачиваются в конце срока.",
+        "«Доходный год» — проценты выплачиваются в конце срока."
+      ]
+    },
+
+    early_termination: {
+      title: "Досрочное закрытие вкладов",
+      items: [
+        "Условия отличаются по продуктам.",
+        "«Максимальный доход» и «Максимальный доход: Новые деньги»: для коротких сроков — ставка «До востребования», для длинных сроков с 182-го дня — 1/2 ставки договора.",
+        "«Пополняемый», «Управляемый», «Доходный год» — по ставке «До востребования».",
+        "«Заслуженный» и «Пенсионный доход»: завершённые полные месяцы учитываются по ставке продукта, неполный текущий месяц — по ставке «До востребования»."
+      ]
+    },
+
+    prolongation: {
+      title: "Автоматическая пролонгация",
+      items: [
+        "Она предусмотрена по большинству действующих вкладов в загруженных условиях.",
+        "Для «Максимального дохода» есть исключения для вкладов, открытых через Финуслуги и banki.ru.",
+        "Для «Максимального дохода: Новые деньги» пролонгация идёт по базовой ставке продукта либо по ставке «До востребования», если приём прекращён."
+      ]
+    },
+
+    mobile_opening: {
+      title: "Открытие вкладов в дистанционных каналах",
+      items: [
+        "«Максимальный доход» доступен через Интернет-банк / METIB Online.",
+        "«Максимальный доход: Новые деньги» доступен через Интернет-банк / METIB Online.",
+        "«Заслуженный» можно открыть через Интернет-банк и мобильное приложение METIB Online."
+      ]
+    },
+
+    office_only: {
+      title: "Вклады с открытием через офис",
+      items: [
+        "«Доходный год» в загруженных условиях указан как вклад с открытием через офис Банка."
+      ]
+    },
+
+    yuan_deposits: {
+      title: "Вклады в китайских юанях",
+      items: [
+        "«Максимальный доход» доступен в китайских юанях.",
+        "Открытие и закрытие вклада в CNY — только безналично."
+      ]
+    },
+
+    aed_deposits: {
+      title: "Вклады в дирхамах ОАЭ",
+      items: [
+        "«Максимальный доход» доступен в дирхамах ОАЭ.",
+        "Открытие и закрытие вклада в AED — только безналично."
+      ]
+    },
+
+    active_savings: {
+      title: "Накопительные счета, доступные для открытия",
+      items: getActiveProducts()
+        .filter(p => p.category === "savings")
+        .map(p => `«${p.name}»`)
+    },
+
+    suspended_savings: {
+      title: "Накопительные счета, открытие которых приостановлено",
+      items: getSuspendedProducts()
+        .filter(p => p.category === "savings")
+        .map(p => `«${p.name}»${p.status?.since ? ` — с ${p.status.since}` : ""}`)
+    },
+
+    best_savings_rate: {
+      title: "Максимальная ставка по накопительным счетам",
+      items: [
+        "Для нового клиента: «Комфортный для Новых клиентов» — 14% годовых первые два отчётных периода.",
+        "Без специального статуса нового клиента: «Комфортный+» — 12,6% годовых в рублях."
+      ]
+    },
+
+    best_savings_new_client: {
+      title: "Для нового клиента",
+      items: [
+        "«Комфортный для Новых клиентов» — 14% годовых первые два отчётных периода.",
+        "С третьего отчётного периода — 11,1% годовых.",
+        "Нужно проверить соответствие клиента критериям нового клиента из тарифа."
+      ]
+    },
+
+    compare_comfort: {
+      title: "«Комфортный+» и «Комфортный для Новых клиентов»",
+      items: [
+        "«Комфортный для Новых клиентов»: 14% первые два отчётных периода, затем 11,1%; доступен клиентам, соответствующим критериям нового клиента.",
+        "«Комфортный+»: 12,6% годовых в рублях; статус нового клиента не требуется.",
+        "По «Комфортный+» действует отдельный режим безналичного пополнения через счета клиента в Металлинвестбанке."
+      ]
+    },
+
+    new_client_definition: {
+      title: "Кто считается новым клиентом",
+      items: [
+        "В продуктовых условиях для вкладов/накопительных счетов используется критерий: в течение 90 календарных дней до открытия отсутствовали срочные вклады и накопительные счета в рублях РФ либо совокупный остаток по ним был менее 3 000 ₽.",
+        "Для отдельных каналов, например Финуслуги / banki.ru, в таблице может использоваться отдельное определение «ранее не обслуживавшийся в Банке» — его нужно применять только к соответствующей строке тарифа."
+      ]
+    },
+
+    third_reporting_period_rate: {
+      title: "Ставка с третьего отчётного периода",
+      items: [
+        "По накопительному счёту «Комфортный для Новых клиентов» с третьего отчётного периода применяется ставка 11,1% годовых.",
+        "Первые два отчётных периода для нового клиента — 14% годовых."
+      ]
+    },
+
+    reporting_period_definition: {
+      title: "Что такое отчётный период",
+      items: [
+        "Для накопительных счетов в тарифе отчётный период — календарный месяц с первого по последний день месяца включительно.",
+        "Первый отчётный период обычно начинается со дня, следующего за днём открытия счёта, и заканчивается в последний календарный день месяца.",
+        "Если счёт открыт в последний календарный день месяца, первым отчётным периодом является следующий календарный месяц."
+      ]
+    },
+
+    deposit_from_100k: {
+      title: "Вклады от 100 000 ₽",
+      items: [
+        "«Максимальный доход» — доступны варианты от 100 000 ₽ для новых клиентов.",
+        "«Максимальный доход: Новые деньги» — варианты от 100 000 ₽.",
+        "«Доходный год» — от 100 000 ₽."
+      ]
+    },
+
+    deposit_from_1500k: {
+      title: "Вклады от 1,5 млн ₽",
+      items: [
+        "«Максимальный доход: Новые деньги» — при сумме от 1,5 млн ₽ предусмотрена повышенная надбавка на сумму Новых денег.",
+        "При сроке 181 день максимальная ставка на сумму Новых денег достигает 13,8% годовых."
+      ]
+    }
+  };
+
+  const data = answers[intent];
+
+  if (!data) return false;
+
+  document.getElementById("answerContent").innerHTML = `
+    <div class="answer-block">
+      <h3>${escapeHtml(data.title)}</h3>
+      <ul>
+        ${data.items.map(item => `<li>${escapeHtml(item)}</li>`).join("")}
+      </ul>
+    </div>
+
+    <div class="answer-block source-block">
+      <strong>Источник:</strong> условия и тарифы продуктов<br>
+      <strong>Условия действуют с:</strong> ${sourceDate}
+    </div>
+  `;
+
+  currentSpeechText =
+    data.title + ". " +
+    data.items.join(". ") +
+    `. Условия действуют с ${sourceDate}.`;
+
+  return true;
+}
+
+
+const OBJECTION_DATABASE = {
+  explicitClientMarkers: [
+    "клиент говорит",
+    "клиент сказал",
+    "клиент считает",
+    "клиент сомневается",
+    "клиент возражает",
+    "клиент отвечает"
+  ],
+
+  patterns: [
+    {
+      triggers: [
+        "у вас ставка низкая",
+        "у вас ставка маленькая",
+        "в другом банке ставка выше",
+        "невыгодно",
+        "дорого"
+      ],
+      response: {
+        join: "Понимаю, для вас важно выбрать наиболее выгодный вариант.",
+        question: "С каким предложением вы сейчас сравниваете?",
+        clarify: "Что для вас важнее: ставка, срок или возможность пользоваться деньгами?",
+        offer: "Давайте сравним варианты именно по этим параметрам."
+      }
+    },
+
+    {
+      triggers: [
+        "я подумаю",
+        "надо подумать",
+        "не готов",
+        "не хочу",
+        "не нужно"
+      ],
+      response: {
+        join: "Понимаю, решение важно принимать спокойно.",
+        question: "Подскажите, что именно вызывает сомнение?",
+        clarify: "Что для вас будет главным критерием решения?",
+        offer: "Давайте разберём именно этот момент."
+      }
+    }
+  ],
+
+  fallback: {
+    join: "Понимаю вашу позицию.",
+    question: "Подскажите, что именно вызывает сомнение?",
+    clarify: "Что для вас будет главным критерием решения?",
+    offer: "Тогда давайте посмотрим вариант, который лучше соответствует вашим ожиданиям."
+  }
+};
+
+
+function isExplicitClientSpeech(text) {
+  const q = normalizeText(text);
+
+  return OBJECTION_DATABASE.explicitClientMarkers.some(marker =>
+    q.includes(marker)
+  );
+}
+
+
+function getObjectionResponse(text) {
+  const q = normalizeText(text);
+
+  const match = OBJECTION_DATABASE.patterns.find(pattern =>
+    pattern.triggers.some(trigger => q.includes(trigger))
+  );
+
+  return match ? match.response : OBJECTION_DATABASE.fallback;
+}
+
+
+function renderObjection(question) {
+  const response = getObjectionResponse(question);
+
+  document.getElementById("answerContent").innerHTML = `
+    <div class="answer-block">
+      <h3>💬 Работа с возражением</h3>
+
+      <div class="objection-step">
+        <span class="objection-number">1</span>
+        <span class="objection-label">Присоединиться</span>
+        <p>«${escapeHtml(response.join)}»</p>
+      </div>
+
+      <div class="objection-step">
+        <span class="objection-number">2</span>
+        <span class="objection-label">Задать вопрос</span>
+        <p>«${escapeHtml(response.question)}»</p>
+      </div>
+
+      <div class="objection-step">
+        <span class="objection-number">3</span>
+        <span class="objection-label">Уточнить</span>
+        <p>«${escapeHtml(response.clarify)}»</p>
+      </div>
+
+      <div class="objection-step">
+        <span class="objection-number">4</span>
+        <span class="objection-label">Предложить</span>
+        <p>«${escapeHtml(response.offer)}»</p>
+      </div>
+    </div>
+  `;
+
+  currentSpeechText =
+    `Присоединиться. ${response.join}. ` +
+    `Задать вопрос. ${response.question}. ` +
+    `Уточнить. ${response.clarify}. ` +
+    `Предложить. ${response.offer}.`;
+}
+
+
+const KNOWLEDGE_DATABASE = {
+  finuslugi: {
+    id: "finuslugi",
+    title: "Открытие текущего счёта через Финуслуги",
+    steps: [
+      "Перейти на Финуслуги по ссылке с сайта Металлинвестбанка.",
+      "Войти через Госуслуги.",
+      "Пройти идентификацию и отправить заявку в Банк.",
+      "После открытия текущего счёта установить приложение Металлинвестбанка.",
+      "Зарегистрироваться по номеру текущего счёта.",
+      "Открыть вклад или накопительный счёт в приложении."
+    ]
+  },
+
+  digitalRuble: {
+    id: "digitalRuble",
+    title: "Цифровой рубль",
+    answer:
+      "Цифровой рубль — отдельная форма национальной валюты и платёжный инструмент. " +
+      "Для граждан его использование добровольно. Автоматического перевода вкладов в цифровые рубли не предусмотрено."
+  }
+};
+
+
+function findKnowledgeFromQuestion(question) {
+  const q = normalizeText(question);
+
+  const finuslugiIntent =
+    q.includes("финуслуг") ||
+    q.includes("госуслуг") ||
+    (q.includes("нов") && q.includes("клиент") && q.includes("без визита")) ||
+    (q.includes("нов") && q.includes("клиент") && q.includes("дистанцион")) ||
+    (q.includes("откры") && q.includes("вклад") && q.includes("онлайн")) ||
+    (q.includes("после открытия") && q.includes("текущ") && q.includes("счет")) ||
+    (q.includes("зарегистр") && q.includes("приложен") && q.includes("нов") && q.includes("клиент")) ||
+    (q.includes("последовательност") && q.includes("нов") && q.includes("клиент"));
+
+  if (finuslugiIntent) return KNOWLEDGE_DATABASE.finuslugi;
+
+  const digitalRubleIntent =
+    (q.includes("цифров") && q.includes("руб")) ||
+    (q.includes("цифров") && q.includes("кошелек"));
+
+  if (digitalRubleIntent) return KNOWLEDGE_DATABASE.digitalRuble;
+
+  return null;
+}
+
+
+function renderKnowledge(item) {
+  if (item.id === "finuslugi") {
+    document.getElementById("answerContent").innerHTML = `
+      <div class="answer-block">
+        <h3>${escapeHtml(item.title)}</h3>
+        <ol>
+          ${item.steps.map(step => `<li>${escapeHtml(step)}</li>`).join("")}
+        </ol>
+      </div>
+    `;
+
+    currentSpeechText = item.steps.join(". ");
+    return;
+  }
+
+  document.getElementById("answerContent").innerHTML = `
+    <div class="answer-block">
+      <h3>${escapeHtml(item.title)}</h3>
+      <p>${escapeHtml(item.answer)}</p>
+    </div>
+  `;
+
+  currentSpeechText = item.answer;
+}
+
+
+const REFERENCE_QUESTIONS = [
+  "Какая сейчас самая высокая ставка по вкладам?",
+  "Какой вклад самый выгодный для обычного клиента?",
+  "Какой вклад самый выгодный для нового клиента?",
+  "Какая максимальная ставка без условия «Новые деньги»?",
+  "Какая максимальная ставка с условием «Новые деньги»?",
+  "На какой срок сейчас самая высокая ставка?",
+  "Какой вклад можно открыть от 100 000 ₽?",
+  "Какой вклад можно открыть от 1,5 млн ₽?",
+  "Какие вклады можно пополнять?",
+  "По каким вкладам можно частично снимать деньги?",
+  "По каким вкладам проценты выплачиваются ежемесячно?",
+  "Где проценты выплачиваются в конце срока?",
+  "По каким вкладам есть капитализация?",
+  "Что будет с процентами при досрочном закрытии вклада?",
+  "По каким вкладам предусмотрена автоматическая пролонгация?",
+  "Какие вклады можно открыть в мобильном приложении?",
+  "Какие вклады можно открыть только в офисе?",
+  "Какие вклады доступны в юанях?",
+  "Какие вклады доступны в дирхамах?",
+  "Что такое вклад «Максимальный доход»?",
+  "Чем «Максимальный доход» отличается от «Максимальный доход: Новые деньги»?",
+  "Что такое «Новые деньги»?",
+  "Как рассчитываются «Новые деньги»?",
+  "Вся ли сумма вклада получает надбавку за «Новые деньги»?",
+  "Кто считается новым клиентом?",
+  "Какая ставка по «Максимальный доход» для нового клиента?",
+  "Какая ставка по «Максимальный доход» для обычного клиента?",
+  "Какие условия по вкладу «Заслуженный»?",
+  "Кто может открыть «Заслуженный»?",
+  "Какая минимальная сумма по «Заслуженному»?",
+  "Можно ли пополнять «Заслуженный»?",
+  "Можно ли снимать деньги с «Заслуженного»?",
+  "Сколько вкладов «Заслуженный» можно открыть одному клиенту?",
+  "Какие условия по «Доходному году»?",
+  "Какие ставки по периодам у «Доходного года»?",
+  "Какая минимальная гарантированная ставка по «Доходному году»?",
+  "Можно ли пополнять «Доходный год»?",
+  "Какие условия по «Пополняемому»?",
+  "Какие условия по «Управляемому»?",
+  "Какие условия по «Пенсионному доходу»?",
+  "Какие накопительные счета сейчас можно открыть?",
+  "Какие накопительные счета больше не открываются?",
+  "Какая сейчас максимальная ставка по накопительным счетам?",
+  "Какой накопительный счёт выгоднее для нового клиента?",
+  "Чем «Комфортный+» отличается от «Комфортный для Новых клиентов»?",
+  "Какая ставка по «Комфортный+»?",
+  "Какая ставка по «Комфортный+» в юанях?",
+  "Какая минимальная сумма нужна для начисления процентов по «Комфортный+»?",
+  "Как начисляются проценты по «Комфортный+»?",
+  "Когда выплачиваются проценты по «Комфортный+»?",
+  "Что будет с процентами, если закрыть «Комфортный+» до конца месяца?",
+  "Как пополнить «Комфортный+»?",
+  "Можно ли пополнить «Комфортный+» из другого банка?",
+  "Можно ли пополнить «Комфортный+» по СБП?",
+  "На какой счёт сначала перевести деньги перед пополнением «Комфортный+»?",
+  "В какое время можно безналично пополнять «Комфортный+»?",
+  "Можно ли пополнить «Комфортный+» в выходной?",
+  "Можно ли пополнить «Комфортный+» наличными?",
+  "Можно ли выбрать «Комфортный+» счётом по умолчанию для СБП?",
+  "Какая ставка по «Комфортный для Новых клиентов»?",
+  "Сколько действует ставка 14% по «Комфортный для Новых клиентов»?",
+  "Какая ставка будет с третьего отчётного периода?",
+  "Кто считается новым клиентом для «Комфортный для Новых клиентов»?",
+  "Как начисляются проценты по «Комфортный для Новых клиентов»?",
+  "Что такое отчётный период?",
+  "Какие условия по счёту «Интересный»?",
+  "Какие ставки по периодам у счёта «Интересный»?",
+  "Какие накопительные счета сейчас закрыты для новых открытий?",
+  "С какой даты не открывается «Комфортный»?",
+  "С какой даты не открывается «Комфортный NEW»?",
+  "С какой даты не открывается «Доходный»?",
+  "Для кого предназначен «Доходный зарплатный»?",
+  "Как новому клиенту открыть вклад без визита в офис?",
+  "Как открыть текущий счёт через Финуслуги?",
+  "С чего начинается открытие счёта через Финуслуги?",
+  "Нужно ли входить через Госуслуги?",
+  "Что делать после открытия текущего счёта?",
+  "Как зарегистрироваться в приложении Металлинвестбанка новому клиенту?",
+  "Можно ли после открытия текущего счёта открыть вклад в приложении?",
+  "Можно ли открыть накопительный счёт дистанционно новому клиенту?",
+  "Какая последовательность действий для нового клиента?",
+  "Что делать, если клиент хочет открыть вклад онлайн?",
+  "Что такое цифровой рубль?",
+  "Чем цифровой рубль отличается от безналичного рубля?",
+  "Где хранятся цифровые рубли?",
+  "Начисляются ли проценты на цифровые рубли?",
+  "Можно ли использовать цифровой рубль как вклад?",
+  "Обязательно ли гражданину пользоваться цифровым рублём?",
+  "Будет ли цифровой кошелёк открываться автоматически?",
+  "Могут ли вклады автоматически перевести в цифровые рубли?",
+  "Чем вклад отличается от цифрового рубля?",
+  "Какая корректная формулировка про перевод вкладов в цифровые рубли?",
+  "Что сотруднику нельзя обещать клиенту про цифровой рубль?"
+];
+
+
+let recognition = null;
+let isListening = false;
+
+
+function startVoiceInput() {
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    alert("Голосовой ввод не поддерживается. Попробуйте Chrome или Edge.");
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.lang = APP_CONFIG.locale;
+  recognition.interimResults = true;
+
+  const voiceBtn = document.getElementById("voiceBtn");
+
+  recognition.onstart = () => {
+    isListening = true;
+    voiceBtn.classList.add("voice-active");
+    voiceBtn.innerHTML = "🔴 Слушаю...";
+  };
+
+  recognition.onresult = event => {
+    let transcript = "";
+
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      transcript += event.results[i][0].transcript;
+    }
+
+    document.getElementById("questionInput").value = transcript.trim();
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+    voiceBtn.classList.remove("voice-active");
+    voiceBtn.innerHTML = "🎤 Спросить голосом";
+
+    const question = document.getElementById("questionInput").value.trim();
+
+    if (question) processQuestion();
+  };
+
+  recognition.start();
+}
+
+
+function speakCurrentAnswer() {
+  if (!currentSpeechText || !window.speechSynthesis) return;
+
+  stopSpeech();
+
+  const utterance = new SpeechSynthesisUtterance(currentSpeechText);
+  utterance.lang = APP_CONFIG.locale;
+  utterance.rate = 1;
+
+  window.speechSynthesis.speak(utterance);
+}
+
+
+function pauseSpeech() {
+  if (!window.speechSynthesis) return;
+
+  if (window.speechSynthesis.paused) {
+    window.speechSynthesis.resume();
+  } else {
+    window.speechSynthesis.pause();
+  }
+}
+
+
+function stopSpeech() {
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+}
+
+
+function normalizeText(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/ё/g, "е")
+    .replace(/[«»"']/g, "")
+    .trim();
+}
+
+
+function classifyQuestion(question) {
+  /*
+    КЛЮЧЕВОЕ ПРАВИЛО:
+
+    1. Аналитические вопросы по ставкам/продуктам НЕ являются возражениями.
+       Примеры:
+       - "какая ставка сейчас самая выгодная?"
+       - "какой вклад самый выгодный?"
+       - "где выше ставка?"
+
+    2. Возражение — только если:
+       - сотрудник явно передает слова клиента;
+       - либо запрос сформулирован как сомнение/отказ клиента.
+
+    Это разделение намеренно стоит в отдельном файле.
+  */
+
+  if (looksLikeBestRateQuestion(question)) {
+    return { type: "best_rate_analysis" };
+  }
+
+  const genericIntent = getGenericReferenceIntent(question);
+  if (genericIntent) {
+    return { type: "generic_reference_analysis", payload: genericIntent };
+  }
+
+  if (isExplicitClientSpeech(question)) {
+    return { type: "objection" };
+  }
+
+  const knowledge = findKnowledgeFromQuestion(question);
+  if (knowledge) {
+    return { type: "knowledge", payload: knowledge };
+  }
+
+  const product = findProductFromQuestion(question);
+  if (product) {
+    return { type: "product", payload: product };
+  }
+
+  return { type: "unknown" };
+}
+
+
+let currentSpeechText = "";
+let history = [];
+
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+
+function getReplyMode() {
+  const selected = document.querySelector('input[name="replyMode"]:checked');
+  return selected ? selected.value : APP_CONFIG.defaultReplyMode;
+}
+
+
+function findProductFromQuestion(question) {
+  const q = normalizeText(question);
+
+  // Склонения и формы названий продуктов.
+  if (q.includes("заслуженн")) return getProductById("deserved");
+  if (q.includes("доходн") && q.includes("год")) return getProductById("incomeYear");
+  if (q.includes("пополняем")) return getProductById("replenishable");
+  if (q.includes("управляем")) return getProductById("managed");
+  if (q.includes("пенсионн") && q.includes("доход")) return getProductById("pensionIncome");
+
+  const aliases = [
+    ["comfortPlus", ["комфортный+", "комфорт плюс", "комфортный +"]],
+    ["comfortableNewClients", ["комфортный для новых клиентов"]],
+    ["maximumIncomeNewMoney", ["максимальный доход новые деньги", "максимальный доход: новые деньги", "новые деньги"]],
+    ["maximumIncome", ["максимальный доход"]],
+    ["incomeYear", ["доходный год"]],
+    ["replenishable", ["пополняемый"]],
+    ["managed", ["управляемый"]],
+    ["pensionIncome", ["пенсионный доход"]],
+    ["deserved", ["заслуженный"]],
+    ["interestingSavings", ["интересный"]],
+    ["comfortableNew", ["комфортный new"]],
+    ["profitablePayroll", ["доходный зарплатный"]],
+    ["profitableSavings", ["доходный"]],
+    ["comfortableSavings", ["комфортный"]]
+  ];
+
+  for (const [id, names] of aliases) {
+    if (names.some(name => q.includes(normalizeText(name)))) {
+      return getProductById(id);
+    }
+  }
+
+  return null;
+}
+
+
+function humanizeKey(key) {
+  const map = {
+    currency: "Валюта",
+    currencies: "Валюта",
+    rates: "Ставки",
+    rate: "Ставка",
+    terms: "Сроки",
+    rubRatesEnd: "Ставки в рублях",
+    rubRatesNewClients: "Ставки для новых клиентов",
+    monthlyRates: "Ставки при ежемесячной выплате",
+    minimumBalanceForInterest: "Минимальный остаток для начисления",
+    amount: "Сумма",
+    replenishment: "Пополнение",
+    remoteReplenishment: "Дистанционное пополнение",
+    interest: "Начисление процентов",
+    payment: "Выплата процентов",
+    earlyClosure: "Закрытие до конца периода",
+    earlyTermination: "Досрочное расторжение",
+    newClient: "Новый клиент",
+    newMoney: "Новые деньги",
+    bonusApplication: "Как применяется надбавка",
+    bonus100k: "Надбавка от 100 000 ₽",
+    bonus1500k: "Надбавка от 1 500 000 ₽",
+    baseRates: "Базовые ставки",
+    audience: "Для кого",
+    minimumAmount: "Минимальная сумма",
+    minimumBalance: "Неснижаемый остаток",
+    term: "Срок",
+    effectiveRate: "Эффективная ставка",
+    partialWithdrawal: "Расходные операции",
+    interestPayment: "Выплата процентов",
+    period1: "Период 1",
+    period2: "Период 2",
+    period3: "Период 3",
+    minimumGuaranteedRate: "Минимальная гарантированная ставка"
+  };
+
+  return map[key] || key;
+}
+
+
+function renderProduct(product) {
+  const statusText =
+    product.status.opening === "suspended"
+      ? product.status.label
+      : "Доступен для открытия";
+
+  const statusClass =
+    product.status.opening === "suspended"
+      ? "suspended"
+      : "";
+
+  const details = Object.entries(product.official)
+    .map(([key, value]) => `
+      <div class="detail-item">
+        <b>${escapeHtml(humanizeKey(key))}</b>
+        ${escapeHtml(String(value))}
+      </div>
+    `).join("");
+
+  const important =
+    product.consultation?.important
+      ? `<div class="answer-block important">
+           <h3>Важно</h3>
+           <ul>
+             ${product.consultation.important.map(x => `<li>${escapeHtml(x)}</li>`).join("")}
+           </ul>
+         </div>`
+      : "";
+
+  document.getElementById("answerContent").innerHTML = `
+    <div class="answer-block">
+      <span class="tag ${statusClass}">${escapeHtml(statusText)}</span>
+      <h3>${escapeHtml(product.name)}</h3>
+      <div class="short-answer">${escapeHtml(product.consultation.short)}</div>
+    </div>
+
+    <div class="answer-block">
+      <h3>Основные условия</h3>
+      <div class="details-grid">
+        ${details}
+      </div>
+    </div>
+
+    ${important}
+
+    <div class="answer-block source-block">
+      <strong>Источник:</strong> ${escapeHtml(product.source?.title || "")}<br>
+      ${product.source?.effectiveFrom
+        ? `<strong>Условия действуют с:</strong> ${escapeHtml(product.source.effectiveFrom)}`
+        : ""}
+      ${product.source?.consultationTitle
+        ? `<br><strong>Практическая памятка:</strong> ${escapeHtml(product.source.consultationTitle)}`
+        : ""}
+    </div>
+  `;
+
+  currentSpeechText =
+    product.consultation.short +
+    (product.source?.effectiveFrom
+      ? ` Условия действуют с ${product.source.effectiveFrom}.`
+      : "");
+}
+
+
+function renderUnknown() {
+  document.getElementById("answerContent").innerHTML = `
+    <div class="answer-block alert-block">
+      <h3>Нет подтверждённой информации</h3>
+      <p>В текущей базе нет достаточных данных для ответа.</p>
+    </div>
+  `;
+
+  currentSpeechText =
+    "В текущей базе нет достаточных данных для ответа.";
+}
+
+
+function processQuestion() {
+  stopSpeech();
+
+  const question = document.getElementById("questionInput").value.trim();
+
+  if (!question) {
+    alert("Введите или произнесите вопрос.");
+    return;
+  }
+
+  addToHistory(question);
+
+  document.getElementById("recognizedQuestion").innerHTML =
+    `Вы спросили: <strong>«${escapeHtml(question)}»</strong>`;
+
+  const route = classifyQuestion(question);
+
+  if (route.type === "best_rate_analysis") {
+    renderBestRateAnalysis();
+  }
+
+  else if (route.type === "generic_reference_analysis") {
+    renderGenericReferenceAnalysis(route.payload);
+  }
+
+  else if (route.type === "objection") {
+    renderObjection(question);
+  }
+
+  else if (route.type === "knowledge") {
+    renderKnowledge(route.payload);
+  }
+
+  else if (route.type === "product") {
+    renderProduct(route.payload);
+  }
+
+  else {
+    renderUnknown();
+  }
+
+  document.getElementById("answerCard").classList.add("show");
+
+  if (["voice", "both"].includes(getReplyMode())) {
+    setTimeout(() => speakCurrentAnswer(), 200);
+  }
+
+  setTimeout(() => {
+    document.getElementById("answerCard")
+      .scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 50);
+}
+
+
+function askQuick(text) {
+  document.getElementById("questionInput").value = text;
+  processQuestion();
+}
+
+
+function clearQuestion() {
+  stopSpeech();
+  document.getElementById("questionInput").value = "";
+  document.getElementById("answerCard").classList.remove("show");
+  currentSpeechText = "";
+}
+
+
+function addToHistory(question) {
+  if (history[0] === question) return;
+
+  history.unshift(question);
+  history = history.slice(0, 7);
+
+  renderHistory();
+}
+
+
+function renderHistory() {
+  const list = document.getElementById("historyList");
+
+  if (!history.length) {
+    list.innerHTML =
+      `<div class="small-note">Здесь появится история вопросов.</div>`;
+    return;
+  }
+
+  list.innerHTML = history.map((item, index) => `
+    <button class="history-item" onclick="repeatHistory(${index})">
+      ${escapeHtml(item.length > 48 ? item.slice(0, 48) + "…" : item)}
+    </button>
+  `).join("");
+}
+
+
+function repeatHistory(index) {
+  document.getElementById("questionInput").value = history[index];
+  processQuestion();
+}
+
+
+function renderCatalog() {
+  const makeButtons = items =>
+    items.map(product => `
+      <button
+        class="category-product-btn"
+        onclick="askQuick('Расскажи про ${escapeHtml(product.name)}')"
+      >
+        ${escapeHtml(product.name)}
+      </button>
+    `).join("");
+
+  document.getElementById("activeProducts").innerHTML =
+    makeButtons(getActiveProducts());
+
+  document.getElementById("suspendedProducts").innerHTML =
+    makeButtons(getSuspendedProducts());
+}
+
+
+window.addEventListener("load", () => {
+  renderHistory();
+  renderCatalog();
+
+  document.getElementById("questionInput")
+    .addEventListener("keydown", event => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        processQuestion();
+      }
+    });
+});
+
+</script>
+</body>
+</html>
